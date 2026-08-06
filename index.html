@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <title>Zekaa AI - Ultimate Gen-6</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        dark: { 900: '#030303', 800: '#0a0a0a', 700: '#141414' },
+                        brand: { purple: '#8b5cf6', blue: '#3b82f6', teal: '#0ea5e9', emerald: '#10b981' }
+                    },
+                    animation: {
+                        'blob': 'blob 15s infinite alternate',
+                        'message-pop': 'messagePop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'spin-slow': 'spin 12s linear infinite',
+                        'gradient-x': 'gradient-x 3s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'toast-enter': 'toastEnter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+                        'scan': 'scan 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(40px, -60px) scale(1.1)' },
+                            '66%': { transform: 'translate(-30px, 30px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        messagePop: {
+                            '0%': { opacity: '0', transform: 'translateY(30px) scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+                        },
+                        toastEnter: {
+                            '0%': { opacity: '0', transform: 'translate(-50%, 20px)' },
+                            '100%': { opacity: '1', transform: 'translate(-50%, 0)' },
+                        },
+                        'gradient-x': {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        scan: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root { --header-height: 85px; }
+        
+        body, html {
+            height: 100dvh; margin: 0; padding: 0;
+            background-color: #030303; color: #f8fafc;
+            overflow: hidden; 
+        }
+
+        /* --- UI TEXTURE (APPLE VISION PRO STYLE) --- */
+        .glass-noise {
+            position: relative;
+        }
+        .glass-noise::before {
+            content: "";
+            position: absolute; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04; mix-blend-mode: overlay; pointer-events: none; border-radius: inherit;
+            z-index: -1;
+        }
+
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: fixed; inset: 0; z-index: 9999;
+            background-color: #030303;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease, transform 0.8s ease, visibility 0.8s;
+        }
+        #splash-screen.hidden-splash { opacity: 0; transform: scale(1.1); visibility: hidden; pointer-events: none; }
+        .splash-core { position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; }
+        .splash-ring-1 { position: absolute; inset: 0; border: 2px solid transparent; border-top-color: #0ea5e9; border-bottom-color: #8b5cf6; border-radius: 50%; animation: spin 2s ease-in-out infinite; box-shadow: 0 0 20px rgba(14,165,233,0.2); }
+        .splash-ring-2 { position: absolute; inset: 15px; border: 2px solid transparent; border-left-color: #10b981; border-right-color: #3b82f6; border-radius: 50%; animation: spin 1.5s ease-in-out infinite reverse; }
+        .splash-text {
+            margin-top: 2.5rem; font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 900; letter-spacing: 0.25em;
+            background: linear-gradient(to right, #0ea5e9, #8b5cf6, #0ea5e9); background-size: 200% auto;
+            color: transparent; -webkit-background-clip: text; animation: gradient-x 2s linear infinite;
+            filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.4));
+        }
+
+        /* --- BACKGROUND (AURORA ORBS & GRID) --- */
+        .bg-aurora {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
+            z-index: 0; overflow: hidden; pointer-events: none; background: #030303;
+        }
+        .orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.35; mix-blend-mode: screen; }
+        .orb-1 { top: -10%; left: -10%; width: 55vw; height: 55vw; background: #6d28d9; animation: blob 15s infinite alternate ease-in-out; }
+        .orb-2 { top: 40%; right: -20%; width: 65vw; height: 65vw; background: #0ea5e9; animation: blob 18s infinite alternate-reverse ease-in-out; }
+        .orb-3 { bottom: -20%; left: 20%; width: 50vw; height: 50vw; background: #3b82f6; animation: blob 20s infinite alternate ease-in-out; }
+
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 10%, transparent 85%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 10%, transparent 85%);
+        }
+
+        /* --- LAYOUT & UI COMPONENTS --- */
+        .app-container { display: flex; flex-direction: column; height: 100dvh; width: 100vw; position: relative; z-index: 10; }
+
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.45); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .chat-area {
+            flex: 1; overflow-y: auto; scroll-behavior: smooth;
+            padding: 1.25rem; padding-top: calc(var(--header-height) + 1.5rem); padding-bottom: 2rem;
+        }
+        .chat-area::-webkit-scrollbar { width: 4px; }
+        .chat-area::-webkit-scrollbar-track { background: transparent; }
+        .chat-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; transition: background 0.3s;}
+        .chat-area::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+        .msg-user {
+            background: linear-gradient(135deg, #8b5cf6, #0ea5e9);
+            box-shadow: 0 10px 30px -5px rgba(139, 92, 246, 0.3), inset 0 1px 3px rgba(255,255,255,0.4);
+            border-bottom-right-radius: 4px; border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .msg-user:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px -5px rgba(139, 92, 246, 0.4), inset 0 1px 3px rgba(255,255,255,0.5);
+        }
+        .msg-ai {
+            background: rgba(15, 15, 15, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255,255,255,0.05);
+            border-bottom-left-radius: 4px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .msg-ai:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 45px -5px rgba(0, 0, 0, 0.7), 0 0 15px rgba(14, 165, 233, 0.1), inset 0 1px 1px rgba(255,255,255,0.05);
+        }
+        
+        /* Copy Button Hover */
+        .copy-btn { opacity: 0; transition: opacity 0.3s ease, background-color 0.2s, transform 0.2s; transform: scale(0.9); }
+        .msg-ai-container:hover .copy-btn { opacity: 1; transform: scale(1); }
+
+        /* --- PREMIUM TOGGLE SWITCH --- */
+        .switch-wrapper { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+        .switch-input { display: none; }
+        .switch-bg {
+            width: 70px; height: 36px; background: rgba(20, 20, 20, 0.9); border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.08); position: relative; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
+        }
+        .switch-knob {
+            position: absolute; top: 2px; left: 2px; width: 30px; height: 30px; border-radius: 50%; background: #fff;
+            transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .switch-input:checked + .switch-bg { background: rgba(14, 165, 233, 0.15); border-color: rgba(14, 165, 233, 0.4); box-shadow: inset 0 0 15px rgba(14,165,233,0.1); }
+        .switch-input:checked + .switch-bg .switch-knob { 
+            transform: translateX(34px); background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.6);
+        }
+        .icon-mic { display: none; color: #fff; font-size: 13px; }
+        .icon-font { display: block; color: #52525b; font-size: 13px; }
+        .switch-input:checked + .switch-bg .switch-knob .icon-mic { display: block; }
+        .switch-input:checked + .switch-bg .switch-knob .icon-font { display: none; }
+
+        /* --- REALTIME CANVAS VISUALIZER --- */
+        .audio-canvas-container {
+            width: 120px; height: 36px;
+            position: relative; display: flex; align-items: center;
+        }
+        .visualizer-canvas {
+            width: 100%; height: 100%;
+            display: block; /* Managed by JS */
+        }
+        /* Fallback lines if not playing */
+        .audio-wave-static { display: flex; align-items: center; gap: 4px; height: 100%; width: 100%; position: absolute; inset:0;}
+        .wave-bar { width: 3px; border-radius: 4px; background: rgba(255,255,255,0.15); }
+        .playing-canvas .audio-wave-static { opacity: 0; }
+
+        /* --- TOAST NOTIFICATION --- */
+        .toast {
+            position: fixed; top: 20px; left: 50%; z-index: 10000;
+            background: rgba(16, 185, 129, 0.9); backdrop-filter: blur(10px);
+            color: white; padding: 12px 28px; border-radius: 30px; font-size: 14px; font-weight: 600;
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4); pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* --- ADVANCED MARKDOWN --- */
+        .markdown-body pre { 
+            background: #0a0a0a !important; padding: 16px; border-radius: 12px; 
+            border: 1px solid rgba(255,255,255,0.08); overflow-x: auto; margin-top: 12px; margin-bottom: 12px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); position: relative;
+        }
+        .markdown-body pre::before {
+            content: "CODE"; position: absolute; top: 0; right: 0; background: rgba(255,255,255,0.1); 
+            font-size: 9px; padding: 2px 8px; border-bottom-left-radius: 8px; color: #a1a1aa;
+        }
+        .markdown-body code { font-family: 'Fira Code', monospace; color: #34d399; font-size: 0.9em; }
+        .markdown-body p code { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: #60a5fa;}
+
+        /* --- INPUT BAR FIX --- */
+        .input-wrapper {
+            background: rgba(10, 10, 10, 0.7); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(255,255,255,0.05); padding: 1rem;
+        }
+        .input-box {
+            background: rgba(20, 20, 20, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.3s ease;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .input-box:focus-within {
+            background: rgba(25, 25, 25, 0.8); border-color: rgba(14, 165, 233, 0.6);
+            box-shadow: 0 0 25px rgba(14, 165, 233, 0.2), inset 0 0 0 1px rgba(14,165,233,0.1);
+        }
+
+        /* --- 3D TILT EFFECT --- */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+        }
+        .tilt-card-inner {
+            transform: translateZ(30px);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <div class="splash-core">
+            <div class="splash-ring-1"></div>
+            <div class="splash-ring-2"></div>
+            <svg viewBox="0 0 100 100" class="w-16 h-16 text-brand-teal z-10 drop-shadow-[0_0_15px_rgba(14,165,233,0.8)]" fill="none" stroke="currentColor" stroke-width="4">
+                <path d="M50 10 L90 30 L90 70 L50 90 L10 70 L10 30 Z" stroke-linejoin="round" />
+                <circle cx="50" cy="50" r="10" fill="#fff" class="animate-ping opacity-80" />
+            </svg>
+        </div>
+        <div class="splash-text">ZEKAA AI</div>
+        <p class="text-brand-teal/60 text-xs mt-6 font-mono tracking-[0.3em] uppercase animate-pulse">Initializing Core_</p>
+    </div>
+
+    <div class="bg-aurora">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="bg-grid"></div>
+
+    <div class="app-container">
+        
+        <!-- HEADER -->
+        <header class="glass-panel glass-noise absolute top-0 w-full h-[var(--header-height)] z-50 flex items-center justify-between px-4 md:px-8 shadow-xl">
+            <div class="flex items-center gap-3 md:gap-4">
+                <!-- SVG Custom Logo -->
+                <div class="relative w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-dark-800 to-dark-900 flex items-center justify-center border border-zinc-700/50 shadow-[0_0_20px_rgba(14,165,233,0.4)] overflow-hidden">
+                    <div class="absolute inset-0 bg-brand-teal/10 animate-pulse"></div>
+                    <svg class="w-full h-full p-2.5 animate-float drop-shadow-[0_0_8px_rgba(14,165,233,0.8)]" viewBox="0 0 100 100" fill="none">
+                        <path class="origin-center animate-spin-slow" d="M50 15L85 35V65L50 85L15 65V35L50 15Z" stroke="url(#paint0_linear)" stroke-width="6" stroke-linejoin="round"/>
+                        <circle cx="50" cy="50" r="12" fill="#0ea5e9"/>
+                        <defs>
+                            <linearGradient id="paint0_linear" x1="15" y1="15" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#0ea5e9"/><stop offset="1" stop-color="#8b5cf6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-dark-900 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                </div>
+
+                <div>
+                    <h1 class="font-display font-black text-xl md:text-2xl tracking-wide flex items-center bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-100 to-brand-teal">
+                        Zekaa AI
+                        <span class="ml-2 text-[9px] md:text-[10px] bg-gradient-to-r from-brand-teal to-blue-600 text-white px-2 py-0.5 rounded-full uppercase tracking-widest shadow-[0_0_10px_rgba(14,165,233,0.5)] border border-blue-400/30">Gen-6</span>
+                    </h1>
+                    <p class="text-[10px] md:text-[11px] text-brand-teal/70 font-medium tracking-widest font-mono mt-0.5">VIRTUAL.ASSISTANT_</p>
+                </div>
+            </div>
+
+            <!-- Voice Toggle -->
+            <div class="flex items-center gap-3 bg-dark-900/80 px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-white/10 shadow-inner backdrop-blur-md">
+                <span id="mode-text" class="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest hidden md:block transition-colors duration-300">Mode Teks</span>
+                <label class="switch-wrapper">
+                    <input type="checkbox" id="voice-toggle" class="switch-input">
+                    <div class="switch-bg">
+                        <div class="switch-knob">
+                            <i class="fa-solid fa-microphone icon-mic drop-shadow-md"></i>
+                            <i class="fa-solid fa-font icon-font"></i>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </header>
+
+        <main id="chat-container" class="chat-area flex flex-col gap-6">
+            
+            <!-- Welcome Screen (3D Tilt Card) -->
+            <div id="welcome-screen" class="flex flex-col items-center justify-center h-full text-center px-4 animate-message-pop">
+                <div id="tilt-box" class="tilt-card relative w-full max-w-lg p-8 rounded-[2rem] bg-dark-800/60 border border-white/10 glass-noise shadow-2xl overflow-hidden group transition-transform duration-200 ease-out">
+                    <div class="absolute -top-20 -left-20 w-60 h-60 bg-brand-teal/20 blur-[90px] rounded-full group-hover:bg-brand-teal/30 transition-colors duration-700"></div>
+                    <div class="absolute -bottom-20 -right-20 w-60 h-60 bg-brand-purple/20 blur-[90px] rounded-full group-hover:bg-brand-purple/30 transition-colors duration-700"></div>
+                    
+                    <div class="tilt-card-inner relative z-10 flex flex-col items-center pointer-events-none">
+                        <div class="w-20 h-20 mb-6 rounded-2xl bg-gradient-to-tr from-dark-700 to-dark-800 border border-zinc-600/50 flex items-center justify-center shadow-[0_0_30px_rgba(14,165,233,0.3)] animate-float">
+                            <svg class="w-10 h-10 text-brand-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
+                        </div>
+                        <h2 class="font-display text-3xl font-black text-white mb-2 tracking-wide">Zekaa AI <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-teal to-brand-purple">New</span></h2>
+                        <p class="text-zinc-300 text-sm md:text-base leading-relaxed font-medium">
+                            hmm.<br>
+                            siap membantu kapan saja. Aktifkan <span class="text-brand-teal font-bold"><i class="fa-solid fa-microphone mr-1"></i>Voice Mode</span> untuk interaksi suara.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+
+        <div class="input-wrapper relative z-50 glass-noise">
+            <div class="max-w-4xl mx-auto">
+                <form id="chat-form" class="input-box p-2 rounded-[2rem] flex items-end gap-2 md:gap-3">
+                    <div class="flex-1 px-4 py-2 relative">
+                        <textarea 
+                            id="message-input" rows="1"
+                            class="w-full bg-transparent border-0 text-white focus:outline-none focus:ring-0 resize-none overflow-y-auto max-h-32 text-sm md:text-base py-1.5 font-medium placeholder:text-zinc-500"
+                            placeholder="Ketik pesan kamu di sini..." required
+                        ></textarea>
+                    </div>
+                    <button 
+                        type="submit" id="send-button"
+                        class="w-12 h-12 md:w-14 md:h-14 shrink-0 bg-gradient-to-br from-brand-teal to-blue-600 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 shadow-[0_0_20px_rgba(14,165,233,0.4)]"
+                    >
+                        <i class="fa-solid fa-paper-plane text-lg ml-0.5 transform transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 3D TILT EFFECT ---
+            const tiltBox = document.getElementById('tilt-box');
+            if (tiltBox) {
+                tiltBox.addEventListener('mousemove', (e) => {
+                    const rect = tiltBox.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -10; // Max rotation 10deg
+                    const rotateY = ((x - centerX) / centerX) * 10;
+                    tiltBox.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                });
+                tiltBox.addEventListener('mouseleave', () => {
+                    tiltBox.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+                });
+            }
+
+            // Splash Screen
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                splash.classList.add('hidden-splash');
+                if(window.innerWidth > 768) setTimeout(() => document.getElementById('message-input').focus(), 800);
+            }, 2500);
+
+            const chatForm = document.getElementById('chat-form');
+            const messageInput = document.getElementById('message-input');
+            const chatContainer = document.getElementById('chat-container');
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const sendButton = document.getElementById('send-button');
+            const voiceToggle = document.getElementById('voice-toggle');
+            const modeText = document.getElementById('mode-text');
+
+            voiceToggle.addEventListener('change', () => {
+                const isVoice = voiceToggle.checked;
+                modeText.innerText = isVoice ? 'Mode Suara' : 'Mode Teks';
+                modeText.className = `text-[10px] md:text-xs font-bold uppercase tracking-widest hidden md:block transition-colors duration-300 ${isVoice ? 'text-brand-teal text-shadow-glow' : 'text-zinc-500'}`;
+                messageInput.placeholder = isVoice ? "AI akan membalas pakai suara asli..." : "Ketik pesan kamu di sini...";
+            });
+
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (this.value.trim() !== '') chatForm.dispatchEvent(new Event('submit'));
+                }
+            });
+
+            function scrollToBottom() {
+                setTimeout(() => { chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' }); }, 50);
+            }
+
+            window.copyText = function(textStr) {
+                const el = document.createElement('textarea');
+                el.value = decodeURIComponent(textStr);
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                
+                const toast = document.createElement('div');
+                toast.className = 'toast animate-toast-enter flex items-center gap-2 glass-noise';
+                toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> Disalin ke clipboard!`;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translate(-50%, -20px)';
+                    toast.style.transition = 'all 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }, 2000);
+            };
+
+            function getTimeString() {
+                const now = new Date();
+                return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            }
+
+            // --- AI SYSTEM ---
+            const API_KEY = ""; // Keep user's setup untouched
+            const systemPrompt = `Nama kamu adalah Zekaa AI. Kamu adalah asisten AI cerdas yang dikembangkan oleh Raka Permana Herdiansyah. Waktu saat ini dan tanggal pengembanganmu adalah 6 Agustus 2026.
+            Gaya bahasamu natural, luwes, dan bersahabat layaknya ChatGPT. Gunakan bahasa Indonesia sehari-hari yang santai namun sopan (bisa pakai gue/lo). JANGAN bersikap berlebihan, sok asik, atau memposisikan diri sebagai "asisten paling jenius/kece". Jadilah asisten yang rendah hati dan natural. Berikan respons yang sesuai: bisa singkat padat jika pertanyaannya sederhana, atau panjang dan detail jika dibutuhkan. Selalu gunakan format markdown untuk merapikan kode atau teks tebal.`;
+            
+            let chatHistory = []; 
+
+            // --- REALTIME AUDIO VISUALIZER SYSTEM ---
+            let audioCtx = null;
+            let activeAudioId = null; 
+            const audioRegistry = new Map(); 
+            let analyser = null;
+            let animationFrameId = null;
+
+            async function fetchWithRetry(url, options, retries = 3) {
+                for (let i = 0; i < retries; i++) {
+                    const res = await fetch(url, options);
+                    if (res.ok) return res;
+                    if (res.status === 429) {
+                        await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                        continue;
+                    }
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                throw new Error("Server terlalu sibuk.");
+            }
+
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const text = messageInput.value.trim();
+                if (!text) return;
+
+                if (welcomeScreen) welcomeScreen.style.display = 'none';
+                
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                appendMessage(text, 'user');
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                scrollToBottom();
+                
+                const isVoiceMode = voiceToggle.checked;
+                const loadingId = setLoadingIndicator(isVoiceMode);
+                chatHistory.push({ role: 'user', parts: [{ text: text }] });
+
+                try {
+                    const textPayload = { contents: chatHistory, systemInstruction: { parts: [{ text: systemPrompt }] } };
+                    const textApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`;
+                    
+                    const textRes = await fetchWithRetry(textApiUrl, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(textPayload)
+                    });
+                    
+                    const textData = await textRes.json();
+                    const aiReplyText = textData.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak bisa memproses permintaan itu saat ini.";
+                    chatHistory.push({ role: 'model', parts: [{ text: aiReplyText }] });
+
+                    document.getElementById(loadingId)?.remove();
+
+                    if (isVoiceMode) {
+                        const audioData = await generateAudio(aiReplyText);
+                        if (audioData) {
+                            const messageId = `msg-${Date.now()}`;
+                            appendVoiceOnlyMessage(messageId);
+                            await setupAudioPlayer(audioData.base64, audioData.sampleRate, messageId);
+                        } else {
+                            appendMessage("Maaf, fitur suara sedang gangguan (Server Limit/API Kosong). Ini balasan teksnya:\n\n" + aiReplyText, 'ai');
+                        }
+                    } else {
+                        appendMessage(aiReplyText, 'ai');
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                    document.getElementById(loadingId)?.remove();
+                    appendMessage(`Sepertinya jaringan sedang bermasalah. Pastikan API Key sudah diisi, lalu coba lagi.`, 'error');
+                } finally {
+                    messageInput.disabled = false;
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="fa-solid fa-paper-plane text-lg ml-0.5 transform transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"></i>';
+                    if(window.innerWidth > 768) messageInput.focus();
+                    scrollToBottom();
+                }
+            });
+
+            async function generateAudio(text) {
+                try {
+                    const cleanText = text.replace(/[*_#`]/g, ''); 
+                    const ttsPayload = {
+                        contents: [{ parts: [{ text: cleanText }] }],
+                        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } } } },
+                        model: "gemini-2.5-flash-preview-tts"
+                    };
+                    const ttsApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
+                    
+                    const res = await fetchWithRetry(ttsApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ttsPayload) }, 4);
+                    const data = await res.json();
+                    const part = data?.candidates?.[0]?.content?.parts?.[0];
+                    if (part?.inlineData?.data && part?.inlineData?.mimeType) {
+                        const sampleRate = parseInt(part.inlineData.mimeType.match(/rate=(\d+)/)[1], 10) || 24000;
+                        return { base64: part.inlineData.data, sampleRate: sampleRate };
+                    }
+                    return null;
+                } catch (e) { console.error("TTS Error", e); return null; }
+            }
+
+            async function setupAudioPlayer(base64Str, sampleRate, id) {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (!analyser) {
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 64; // Small size for chunky bars
+                    analyser.connect(audioCtx.destination);
+                }
+                
+                const binary = atob(base64Str);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                
+                const int16 = new Int16Array(bytes.buffer);
+                const buffer = audioCtx.createBuffer(1, int16.length, sampleRate);
+                const channelData = buffer.getChannelData(0);
+                for (let i = 0; i < int16.length; i++) channelData[i] = int16[i] / 32768.0;
+
+                const playBtn = document.getElementById(`play-${id}`);
+                const waveContainer = document.getElementById(`wave-container-${id}`);
+                const canvas = document.getElementById(`canvas-${id}`);
+                const timeText = document.getElementById(`time-${id}`);
+
+                audioRegistry.set(id, {
+                    buffer: buffer, source: null, isPlaying: false,
+                    elements: { playBtn, waveContainer, canvas, timeText }
+                });
+
+                if (playBtn) {
+                    const totalSecs = Math.round(buffer.duration);
+                    timeText.innerText = `${Math.floor(totalSecs / 60)}:${(totalSecs % 60).toString().padStart(2, '0')}`;
+                    playBtn.onclick = () => toggleAudio(id);
+                    playAudio(id); 
+                }
+            }
+
+            function drawVisualizer(canvas) {
+                if(!analyser) return;
+                const canvasCtx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                
+                function draw() {
+                    animationFrameId = requestAnimationFrame(draw);
+                    analyser.getByteFrequencyData(dataArray);
+                    
+                    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    const barWidth = (canvas.width / 12); // Display around 12 bars
+                    let barHeight;
+                    let x = 0;
+                    
+                    for(let i = 0; i < 12; i++) {
+                        // Smooth the value
+                        barHeight = (dataArray[i + 2] / 255) * canvas.height; 
+                        // Minimum height
+                        if(barHeight < 3) barHeight = 3;
+
+                        // Create Gradient
+                        let grad = canvasCtx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+                        grad.addColorStop(0, '#0ea5e9'); // Teal
+                        grad.addColorStop(1, '#8b5cf6'); // Purple
+
+                        canvasCtx.fillStyle = grad;
+                        canvasCtx.beginPath();
+                        canvasCtx.roundRect(x, canvas.height - barHeight, barWidth - 4, barHeight, 4);
+                        canvasCtx.fill();
+                        
+                        x += barWidth;
+                    }
+                }
+                draw();
+            }
+
+            function toggleAudio(id) {
+                const data = audioRegistry.get(id);
+                if (!data) return;
+                data.isPlaying ? pauseAudio(id) : playAudio(id);
+            }
+
+            function playAudio(id) {
+                if (!audioCtx) return;
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                if (activeAudioId && activeAudioId !== id) pauseAudio(activeAudioId); 
+
+                const data = audioRegistry.get(id);
+                if (!data || !data.buffer) return;
+                pauseAudio(id); 
+
+                data.source = audioCtx.createBufferSource();
+                data.source.buffer = data.buffer;
+                // Connect to analyzer instead of destination directly
+                data.source.connect(analyser); 
+                
+                data.elements.playBtn.innerHTML = '<i class="fa-solid fa-pause text-white"></i>';
+                data.elements.playBtn.classList.replace('from-brand-teal', 'from-dark-700');
+                data.elements.playBtn.classList.replace('to-blue-500', 'to-dark-800');
+                data.elements.waveContainer.classList.add('playing-canvas');
+                
+                data.isPlaying = true;
+                activeAudioId = id;
+                
+                // Start drawing
+                if(animationFrameId) cancelAnimationFrame(animationFrameId);
+                drawVisualizer(data.elements.canvas);
+
+                data.source.onended = () => resetAudioUI(id);
+                data.source.start(0);
+            }
+
+            function pauseAudio(id) {
+                const data = audioRegistry.get(id);
+                if (!data) return;
+                if (data.source) {
+                    try { data.source.stop(); } catch(e){}
+                    data.source = null;
+                }
+                resetAudioUI(id);
+            }
+
+            function resetAudioUI(id) {
+                const data = audioRegistry.get(id);
+                if (!data) return;
+                data.isPlaying = false;
+                data.elements.playBtn.innerHTML = '<i class="fa-solid fa-play text-white ml-0.5"></i>';
+                data.elements.playBtn.classList.replace('from-dark-700', 'from-brand-teal');
+                data.elements.playBtn.classList.replace('to-dark-800', 'to-blue-500');
+                data.elements.waveContainer.classList.remove('playing-canvas');
+                
+                if (activeAudioId === id) {
+                    activeAudioId = null;
+                    if(animationFrameId) cancelAnimationFrame(animationFrameId);
+                    // Clear active canvas
+                    const canvasCtx = data.elements.canvas.getContext('2d');
+                    canvasCtx.clearRect(0, 0, data.elements.canvas.width, data.elements.canvas.height);
+                }
+            }
+
+            function appendMessage(text, sender) {
+                const div = document.createElement('div');
+                div.className = `flex w-full animate-message-pop ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+                const timeStr = getTimeString();
+
+                if (sender === 'user') {
+                    div.innerHTML = `
+                        <div class="flex flex-col items-end gap-1 max-w-[85%] md:max-w-[75%]">
+                            <div class="px-5 py-3.5 msg-user text-white rounded-[1.5rem] rounded-br-sm relative z-10 font-medium text-sm md:text-base leading-relaxed">
+                                ${escapeHTML(text)}
+                            </div>
+                            <span class="text-[10px] text-zinc-500 font-mono">${timeStr}</span>
+                        </div>
+                    `;
+                } else if (sender === 'ai') {
+                    const encodedText = encodeURIComponent(text);
+                    div.innerHTML = `
+                        <div class="flex max-w-[95%] md:max-w-[85%] gap-3 md:gap-4 relative z-10 msg-ai-container group">
+                            <div class="w-10 h-10 rounded-xl bg-dark-900 flex-shrink-0 flex items-center justify-center border border-zinc-700 shadow-[0_0_15px_rgba(14,165,233,0.3)] mt-1">
+                                <svg class="w-5 h-5 text-brand-teal" viewBox="0 0 100 100" fill="none"><path d="M50 15L85 35V65L50 85L15 65V35L50 15Z" stroke="currentColor" stroke-width="8" stroke-linejoin="round"/><circle cx="50" cy="50" r="10" fill="currentColor"/></svg>
+                            </div>
+                            <div class="flex flex-col gap-1 w-full">
+                                <div class="msg-ai glass-noise px-5 py-4 rounded-[1.5rem] rounded-tl-sm text-slate-200 relative">
+                                    <button onclick="copyText('${encodedText}')" class="copy-btn absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 hover:bg-brand-teal/20 text-zinc-300 hover:text-brand-teal transition-all shadow-md backdrop-blur-md" title="Copy Text">
+                                        <i class="fa-regular fa-copy text-sm"></i>
+                                    </button>
+                                    <div class="markdown-body text-sm md:text-base leading-relaxed space-y-3 pr-6">
+                                        ${formatMarkdown(escapeHTML(text))}
+                                    </div>
+                                </div>
+                                <span class="text-[10px] text-zinc-500 font-mono ml-1">${timeStr}</span>
+                            </div>
+                        </div>
+                    `;
+                } else if (sender === 'error') {
+                    div.innerHTML = `
+                        <div class="flex w-full justify-center animate-message-pop">
+                           <div class="rounded-xl px-5 py-2.5 bg-red-500/10 border border-red-500/30 text-red-400 text-xs md:text-sm flex items-center gap-3 backdrop-blur-md shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                                <i class="fa-solid fa-triangle-exclamation"></i> <span>${escapeHTML(text)}</span>
+                           </div>
+                        </div>
+                    `;
+                }
+                chatContainer.appendChild(div);
+            }
+
+            function appendVoiceOnlyMessage(id) {
+                const div = document.createElement('div');
+                div.className = `flex w-full animate-message-pop justify-start`;
+                div.id = `container-${id}`;
+                const timeStr = getTimeString();
+
+                div.innerHTML = `
+                    <div class="flex max-w-[95%] md:max-w-[70%] gap-3 md:gap-4 relative z-10">
+                        <div class="w-10 h-10 rounded-xl bg-dark-900 flex-shrink-0 flex items-center justify-center border border-zinc-700 shadow-[0_0_15px_rgba(14,165,233,0.3)] mt-1">
+                            <i class="fa-solid fa-microphone-lines text-brand-teal text-sm"></i>
+                        </div>
+                        <div class="flex flex-col gap-1 w-full">
+                            <div class="msg-ai glass-noise p-3 md:p-4 rounded-[1.5rem] rounded-tl-sm flex items-center gap-4 min-w-[240px] md:min-w-[280px]">
+                                <button id="play-${id}" class="w-12 h-12 rounded-full bg-gradient-to-br from-brand-teal to-blue-500 flex items-center justify-center transition-all duration-300 shadow-[0_0_15px_rgba(14,165,233,0.5)] shrink-0 hover:scale-105">
+                                    <i class="fa-solid fa-circle-notch fa-spin text-white"></i>
+                                </button>
+                                <div class="flex-1 flex flex-col justify-center gap-1.5">
+                                    <div id="wave-container-${id}" class="audio-canvas-container">
+                                        <!-- Realtime Canvas -->
+                                        <canvas id="canvas-${id}" class="visualizer-canvas"></canvas>
+                                        <!-- Static Fallback -->
+                                        <div class="audio-wave-static">
+                                            <div class="wave-bar" style="height: 30%"></div><div class="wave-bar" style="height: 60%"></div><div class="wave-bar" style="height: 100%"></div><div class="wave-bar" style="height: 40%"></div>
+                                            <div class="wave-bar" style="height: 80%"></div><div class="wave-bar" style="height: 50%"></div><div class="wave-bar" style="height: 90%"></div><div class="wave-bar" style="height: 70%"></div>
+                                            <div class="wave-bar" style="height: 40%"></div><div class="wave-bar" style="height: 80%"></div><div class="wave-bar" style="height: 60%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center px-1">
+                                        <span class="text-[10px] text-brand-teal font-bold uppercase tracking-widest font-mono">Audio Note</span>
+                                        <span id="time-${id}" class="text-[10px] text-zinc-400 font-mono">--:--</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] text-zinc-500 font-mono ml-1">${timeStr}</span>
+                        </div>
+                    </div>
+                `;
+                chatContainer.appendChild(div);
+            }
+
+            function setLoadingIndicator(isVoice) {
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+                sendButton.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-white text-lg"></i>';
+                
+                const id = `loading-${Date.now()}`;
+                const div = document.createElement('div');
+                div.id = id;
+                div.className = `flex w-full animate-message-pop justify-start`;
+                
+                const icon = isVoice ? '<i class="fa-solid fa-microphone text-brand-teal/50"></i>' : '<i class="fa-solid fa-bolt text-brand-teal/50 text-sm"></i>';
+                const text = isVoice ? 'Recording...' : 'Processing...';
+
+                div.innerHTML = `
+                    <div class="flex gap-3 md:gap-4 relative z-10">
+                        <div class="w-10 h-10 rounded-xl bg-dark-900 flex-shrink-0 flex items-center justify-center border border-white/5 mt-1">
+                            ${icon}
+                        </div>
+                        <div class="msg-ai glass-noise px-5 py-3.5 rounded-[1.5rem] rounded-tl-sm flex items-center gap-4">
+                            <div class="relative w-16 h-1 bg-dark-700 rounded-full overflow-hidden">
+                                <div class="absolute inset-y-0 w-8 bg-brand-teal rounded-full opacity-80 animate-scan shadow-[0_0_10px_rgba(14,165,233,0.8)]"></div>
+                            </div>
+                            <span class="text-[10px] text-brand-teal/80 font-mono tracking-widest animate-pulse">${text}</span>
+                        </div>
+                    </div>
+                `;
+                chatContainer.appendChild(div);
+                scrollToBottom();
+                return id;
+            }
+
+            function escapeHTML(str) { return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)); }
+            
+            function formatMarkdown(text) {
+                return text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold drop-shadow-md">$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em class="text-zinc-300 italic">$1</em>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                    .replace(/\n/g, '<br>');
+            }
+        });
+    </script>
+</body>
+</html>
